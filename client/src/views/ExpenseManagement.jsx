@@ -11,6 +11,26 @@ import usePayingMoneyStore from '~/store/usePayingMoneyStore';
 import Fallback from '~/components/Fallback';
 import PayingMoneyModal from '~/features/PayingMoney/PayingMoneyModal';
 import useCategoryStore from '~/store/useCategoryStore';
+import ExpenseManagementModal from '~/features/ExpenseManagementModal/ExpenseManagementModal';
+import ExpensesDetailModal from '../features/Expense/ExpensesDetailModal';
+
+const dummyExpenses = [
+  {
+    id: 1,
+    name: 'Expense 1',
+    category: 'Category 1',
+    amount: 1000,
+    date: new Date(),
+  },
+  {
+    id: 2,
+    name: 'Expense 2',
+    category: 'Category 2',
+    amount: 2000,
+    date: new Date(),
+  },
+  // Add more dummy expenses as needed
+];
 
 const ExpenseManagement = () => {
   const [payingMoney, fetchingPayingMoney, fetchPayingMoney] =
@@ -20,11 +40,13 @@ const ExpenseManagement = () => {
       state.fetchPayingMoney,
     ]);
 
+  const [expenseDetailModalOpen, setExpenseDetailModalOpen] = useState(false);
   const [fetchingCategories, fetchCategories] = useCategoryStore((state) => [
     state.fetchingCategories,
     state.fetchCategories,
   ]);
-
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState({});
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [expenses, setExpenses] = useState([]);
@@ -56,16 +78,17 @@ const ExpenseManagement = () => {
     fetchCategories();
   }, []);
 
+  // Use the dummy data
   useEffect(() => {
-    setExpenses(payingMoney);
-  }, [payingMoney]);
+    setExpenses(dummyExpenses);
+  }, [dummyExpenses]);
 
   useEffect(() => {
     const newFilteredExpenses = expenses.filter((expense) => {
-      const receiptDate = new Date(expense.date);
+      const expenseDate = new Date(expense.date);
       return (
-        (selectedMonth ? receiptDate.getMonth() + 1 === selectedMonth : true) &&
-        (selectedYear ? receiptDate.getFullYear() === selectedYear : true)
+        (selectedMonth ? expenseDate.getMonth() + 1 === selectedMonth : true) &&
+        (selectedYear ? expenseDate.getFullYear() === selectedYear : true)
       );
     });
     setFilteredExpenses(newFilteredExpenses);
@@ -81,8 +104,8 @@ const ExpenseManagement = () => {
   };
 
   const calculateTotalAmount = () => {
-    return filteredExpeneses.reduce((acc, receipt) => {
-      const amount = receipt.amount;
+    return filteredExpeneses.reduce((acc, expense) => {
+      const amount = expense.amount;
       return acc + amount;
     }, 0);
   };
@@ -162,22 +185,33 @@ const ExpenseManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredExpeneses.map((expense) => (
-              <tr key={expense.id} className="border-b cursor-pointer">
+            {filteredExpeneses.map((expense, index) => (
+              <tr 
+                key={expense.id + index} 
+                className="border-b cursor-pointer"
+            >
                 <td className="p-4">{expense.name}</td>
                 <td className="p-4">{expense.category}</td>
                 <td className="p-4">
                   {money.formatVietnameseCurrency(expense.amount)}
                 </td>
-                <td className="p-4 ">{expense.date}</td>
+                <td className="p-4 ">{expense.date.toLocaleDateString()}</td>
                 <td
                   onClick={(e) => e.stopPropagation()}
                   className="p-4 flex items-center space-x-2"
                 >
-                  <Button onClick={() => {}} className="text-blue-500">
+                  <Button onClick={() => {
+                    console.log("View Detail button clicked");
+                    setSelectedExpense(expense);
+                    setExpenseDetailModalOpen(true);
+                  }} className="text-blue-500">
                     <FaEye />
                   </Button>
-                  <Button onClick={() => {}}>
+                  <Button onClick={() => {
+                    console.log("View Detail button clicked");
+                    setSelectedExpense(expense);
+                    setEditModalOpen(true);
+                  }}>
                     <FaEdit />
                   </Button>
                   <ExpenseManagementDeleteAlert
@@ -209,6 +243,15 @@ const ExpenseManagement = () => {
         setOpen={(state) => setModalOpen({ ...modalOpen, state })}
         payingMoneyData={modalOpen.selectedPayingMoney}
       />
+
+      <ExpensesDetailModal
+        open={expenseDetailModalOpen}
+        setOpen={setExpenseDetailModalOpen}
+        receipt={selectedExpense}
+        setEditModalOpen={setEditModalOpen}
+        deleteExpense={deleteExpense}
+      />
+
     </div>
   );
 };

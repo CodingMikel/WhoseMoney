@@ -17,7 +17,7 @@ const ExpensesDetailModal = ({
     state.resetConfirmModal,
   ]);
 
-  if (objUtils.isEmptyObject(expense)) {
+  if (!expense || objUtils.isEmptyObject(expense)) {
     return <></>;
   }
 
@@ -30,7 +30,7 @@ const ExpensesDetailModal = ({
       centered
       className="custom-modal"
       footer={null}
-      // zIndex={1000}
+    // zIndex={1000}
     >
       <div className="flex flex-col">
         <header className="text-xl font-medium flex items-center justify-center mt-2 mb-4">
@@ -126,4 +126,4 @@ const ExpensesDetailModal = ({
   );
 };
 
-export default expensesDetailModal;
+export default ExpensesDetailModal;
